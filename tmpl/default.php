@@ -11,8 +11,6 @@
  * License    GNU GPL v3 or later
  */
 
-echo '<pre>' . print_r($json, TRUE) . '</pre>';
-
 ?>
 <ul>
 	<?php if ($tags['category']['total']) : ?>

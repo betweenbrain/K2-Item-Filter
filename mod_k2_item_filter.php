@@ -20,7 +20,7 @@ $doc = JFactory::getDocument();
 // Instantiate our class
 $itemFilter = new modK2ItemFilterHelper($params);
 //
-$json = $itemFilter->getK2Json();
+$json = $itemFilter->getK2Json('category');
 //
 $tags = $itemFilter->getTags($json);
 // Current component Name
