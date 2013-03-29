@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<install type="module" version="2.5" method="upgrade">
+	<name>K2 Item Filter</name>
+	<creationDate>March 28, 2013</creationDate>
+	<author>Matt Thomas</author>
+	<authorUrl>http://betweenbrain.com</authorUrl>
+	<copyright>Copyright (C) 2012 Matt Thomas. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+	<version>1.1</version>
+	<description>MOD_K2_ITEM_FILTER_DESC</description>
+	<files>
+		<filename>item_filter.xml</filename>
+		<filename module="mod_k2_item_filter">item_filter.php</filename>
+		<filename>index.html</filename>
+		<filename>helper.php</filename>
+		<folder>tmpl</folder>
+	</files>
+
+	<languages>
+		<language tag="en-GB">language/en-GB/en-GB.mod_k2_item_filter.ini</language>
+	</languages>
+
+	<params>
+		<param name="countText"
+		       type="text"
+		       default="All in"
+		       label="MOD_K2_ITEM_FILTER_COUNT_TEXT_LABEL"
+		       description="MOD_K2_ITEM_FILTER_COUNT_TEXT_DESC"/>
+		<param name="moduleclass_sfx"
+		       type="text"
+		       default=""
+		       label="Module Class Suffix"
+		       description="PARAMMODULECLASSSUFFIX"/>
+	</params>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field
+						name="moduleclass_sfx"
+						type="text"
+						label="Module Class Suffix"
+						description="PARAMMODULECLASSSUFFIX."/>
+			</fieldset>
+		</fields>
+	</config>
+
+</install>
