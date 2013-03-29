@@ -33,32 +33,75 @@ class modK2ItemFilterHelper {
 		$this->params = $params;
 	}
 
-	/**
-	 * Function to fetch K2 json based on current URL being viewed
-	 *
-	 * @internal param string $name
-	 * @return bool|mixed
-	 * @since    0.0
-	 */
-	function getK2Json() {
+	function getK2Json($scope = NULL, $id = NULL) {
 
-		if (JRequest::getCmd('option') == "com_k2") {
+		switch ($scope) :
 
-			// Reference the global JURI object
-			$juri = JUri::getInstance();
-			// Set query format as json
-			$juri->setVar('format', 'json');
-			// String representation of the URI
-			$uri  = $juri->toString();
-			$json = file_get_contents($uri);
-			// Decode JSON for error checking
-			json_decode($json);
-		}
+			case "category":
+				if (!$id && JRequest::getCmd('task') == 'category') {
+					$id = JRequest::getVar('id');
+				}
+				$uri = JURI::base() . 'index.php?option=com_k2&view=itemlist&layout=category&task=category&id=' . $id . '&format=json';
+				break;
+			case "tag":
+				if (!$id && JRequest::getCmd('task') == 'tag') {
+					$id = JRequest::getVar('tag');
+				}
+				$uri = JURI::base() . 'index.php?option=com_k2&view=itemlist&layout=tag&task=tag&tag=' . $id . '&format=json';
+				break;
+			case "item":
+				if (!$id && JRequest::getCmd('view') == 'item') {
+					$id = JRequest::getVar('id');
+				}
+				$uri = JURI::base() . 'index.php?option=com_k2&view=item&layout=item&id=' . $id . '&format=json';
+				break;
+			default:
+				if (JRequest::getCmd('option') == "com_k2") {
+					// Reference the global JURI object
+					$juri = JUri::getInstance();
+					// Set query format as json
+					$juri->setVar('format', 'json');
+					// String representation of the URI
+					$uri = $juri->toString();
+				}
+		endswitch;
+
+		$json = file_get_contents($uri);
+
 		if (json_last_error() == JSON_ERROR_NONE) {
 			return $json;
 		}
 
 		return FALSE;
+	}
+
+	function testJson($json) {
+
+		json_decode($json);
+
+		switch (json_last_error()) {
+			case JSON_ERROR_NONE:
+				echo 'No errors';
+				break;
+			case JSON_ERROR_DEPTH:
+				echo 'Maximum stack depth exceeded';
+				break;
+			case JSON_ERROR_STATE_MISMATCH:
+				echo 'Underflow or the modes mismatch';
+				break;
+			case JSON_ERROR_CTRL_CHAR:
+				echo 'Unexpected control character found';
+				break;
+			case JSON_ERROR_SYNTAX:
+				echo 'Syntax error, malformed JSON';
+				break;
+			case JSON_ERROR_UTF8:
+				echo 'Malformed UTF-8 characters, possibly incorrectly encoded';
+				break;
+			default:
+				echo 'Unknown error';
+				break;
+		}
 	}
 
 	function getTags($json) {
@@ -67,41 +110,41 @@ class modK2ItemFilterHelper {
 
 		foreach ($results->items as $item) {
 			$ids[] = $item->id;
+		}
 
-			if ($ids) {
-				$db    = JFactory::getDbo();
-				$query = "SELECT tag.name, tag.id FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
-				$db->setQuery($query);
-				$rows = $db->loadObjectList();
+		if ($ids) {
+			$db    = JFactory::getDbo();
+			$query = "SELECT tag.name, tag.id FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
+			$db->setQuery($query);
+			$rows = $db->loadObjectList();
 
-				$cloud = array();
-				if (count($rows)) {
-					foreach ($rows as $tag) {
-						if (@array_key_exists($tag->name, $cloud)) {
-							$cloud[$tag->name]++;
-						} else {
-							$cloud[$tag->name] = 1;
-						}
+			$cloud = array();
+			if (count($rows)) {
+				foreach ($rows as $tag) {
+					if (@array_key_exists($tag->name, $cloud)) {
+						$cloud[$tag->name]++;
+					} else {
+						$cloud[$tag->name] = 1;
 					}
-
-					$counter = '0';
-					$total   = NULL;
-
-					foreach ($cloud as $key => $value) {
-						$tmp            = new stdClass;
-						$tmp->tag       = $key;
-						$tmp->count     = $value;
-						$total          = $total + $value;
-						$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
-						$tags[$counter] = $tmp;
-						$counter++;
-					}
-
-					$tags['category']['name']  = $results->category->name;
-					$tags['category']['total'] = $total;
-
-					return $tags;
 				}
+
+				$counter = '0';
+				$total   = NULL;
+
+				foreach ($cloud as $key => $value) {
+					$tmp            = new stdClass;
+					$tmp->tag       = $key;
+					$tmp->count     = $value;
+					$total          = $total + $value;
+					$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
+					$tags[$counter] = $tmp;
+					$counter++;
+				}
+
+				$tags['category']['name']  = $results->category->name;
+				$tags['category']['total'] = $total;
+
+				return $tags;
 			}
 		}
 	}
