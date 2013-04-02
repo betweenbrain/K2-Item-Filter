@@ -148,4 +148,42 @@ class modK2ItemFilterHelper {
 			}
 		}
 	}
+
+	/**
+	 * Function to retrieve items passed as JSON and then process them by K2 content plugins
+	 *
+	 * @param $json
+	 * @return array|bool
+	 */
+	function prepareContent($json) {
+		$results = json_decode($json);
+
+		// Build array of IDs to reduce the number of database queries
+		foreach ($results->items as $item) {
+			$ids[] = $item->id;
+		}
+
+		// Get the items currently being viewed so we can run them through plugins
+		$db    = JFactory::getDbo();
+		$query = "SELECT i.* FROM #__k2_items as i WHERE i.published = 1 AND i.id IN (" . implode(',', $ids) . ")";
+		$db->setQuery($query);
+		$rows = $db->loadObjectList();
+
+		// Process each item through content plugins
+		foreach ($rows as $item) {
+			JPluginHelper::importPlugin('k2');
+			$dispatcher =& JDispatcher::getInstance();
+			$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
+
+			if ($item) {
+				$items[] = $item;
+			}
+		}
+
+		if ($items) {
+			return $items;
+		}
+
+		return FALSE;
+	}
 }
