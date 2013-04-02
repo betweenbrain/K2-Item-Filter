@@ -19,15 +19,20 @@ $app = JFactory::getApplication();
 $doc = JFactory::getDocument();
 // Instantiate our class
 $itemFilter = new modK2ItemFilterHelper($params);
-//
-$json = $itemFilter->getK2Json('category');
-//
+// Retrieve JSON of current view so to get all Ids
+$json = $itemFilter->getK2Json();
+// Process content plugins
+$items = $itemFilter->prepareContent($json);
+// Encode our results as JSON
+$videos = json_encode($items, TRUE);
+// Retrieve current tags
 $tags = $itemFilter->getTags($json);
 // Current component Name
 $component = JRequest::getCmd('option');
 // Text to display before the tag count
 $countText = $params->get('countText');
 // Check if there are tags and K2 is the current component
+
 if ($component == "com_k2" && $tags) {
 
 	// Render module output
