@@ -131,7 +131,7 @@ class modK2ItemFilterHelper {
 	 * @return mixed
 	 */
 
-	function getTags($json) {
+	function getTagData($json) {
 
 		$ids = $this->buildIdArray($json);
 
@@ -141,34 +141,58 @@ class modK2ItemFilterHelper {
 			$db->setQuery($query);
 			$rows = $db->loadObjectList();
 
-			$cloud = array();
-			if (count($rows)) {
-				foreach ($rows as $tag) {
-					if (@array_key_exists($tag->name, $cloud)) {
-						$cloud[$tag->name]++;
-					} else {
-						$cloud[$tag->name] = 1;
-					}
+			if ($rows) {
+				return $rows;
+			}
+
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Function to generate tag cloud from supplied rows
+	 *
+	 * @param $rows
+	 * @return mixed
+	 */
+
+	function buildTagCloud($json) {
+		$obj  = json_decode($json);
+		$rows = $this->getTagData($json);
+
+		// Initialize empty array
+		$cloud = array();
+
+		if (count($rows)) {
+			foreach ($rows as $tag) {
+				if (@array_key_exists($tag->name, $cloud)) {
+					$cloud[$tag->name]++;
+				} else {
+					$cloud[$tag->name] = 1;
 				}
+			}
 
-				$counter = '0';
-				$total   = NULL;
+			$counter = '0';
+			$total   = NULL;
 
-				foreach ($cloud as $key => $value) {
-					$tmp            = new stdClass;
-					$tmp->tag       = $key;
-					$tmp->count     = $value;
-					$total          = $total + $value;
-					$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
-					$tags[$counter] = $tmp;
-					$counter++;
-				}
+			foreach ($cloud as $key => $value) {
+				$tmp            = new stdClass;
+				$tmp->tag       = $key;
+				$tmp->count     = $value;
+				$total          = $total + $value;
+				$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
+				$tags[$counter] = $tmp;
+				$counter++;
+			}
 
-				$tags['category']['name']  = $results->category->name;
-				$tags['category']['total'] = $total;
+			$tags['category']['name']  = $obj->category->name;
+			$tags['category']['total'] = $total;
 
+			if ($tags) {
 				return $tags;
 			}
+
+			return FALSE;
 		}
 	}
 
