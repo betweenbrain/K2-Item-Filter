@@ -10,6 +10,30 @@
  * Copyright  Copyright (C) 2013 betweenbrain llc. All Rights Reserved.
  * License    GNU GPL v3 or later
  */
+/*
+$data = json_decode($videos);
+echo '<pre>' . print_r($data, true) . '</pre>';
+*/
+
+$js = <<<EOD
+<script type="text/javascript">
+	(function ($) {
+		$().ready(function () {
+			var videos = {$videos};
+			$.each(videos, function(index){
+				var video = [
+				    '<div id="something">',
+				        '<span>' + this.title + '</span>',
+				    '</div>'
+				];
+				$(video.join('')).appendTo(".videos");
+			});
+		});
+	})(jQuery)
+</script>
+EOD;
+
+$doc->addCustomTag($js);
 
 ?>
 <ul>
@@ -26,3 +50,4 @@
 		</li>
 	<?php endforeach ?>
 </ul>
+<div class="videos"></div>

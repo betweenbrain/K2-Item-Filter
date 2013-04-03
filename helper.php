@@ -163,9 +163,17 @@ class modK2ItemFilterHelper {
 			$ids[] = $item->id;
 		}
 
-		// Get the items currently being viewed so we can run them through plugins
+		// Retrieve select data from items currently being viewed
 		$db    = JFactory::getDbo();
-		$query = "SELECT i.* FROM #__k2_items as i WHERE i.published = 1 AND i.id IN (" . implode(',', $ids) . ")";
+		$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins, tag.name AS tag, tag.id as tagId
+		FROM #__k2_tags as tag
+		LEFT JOIN #__k2_tags_xref AS xref
+		ON xref.tagID = tag.id
+		LEFT JOIN #__k2_items AS i
+		ON i.id = xref.itemID
+		WHERE xref.itemID IN (" . implode(',', $ids) . ")
+		AND tag.published = 1
+		AND i.published = 1";
 		$db->setQuery($query);
 		$rows = $db->loadObjectList();
 
