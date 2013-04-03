@@ -124,13 +124,16 @@ class modK2ItemFilterHelper {
 		return FALSE;
 	}
 
+	/**
+	 * Function to get tags associated with item IDs
+	 *
+	 * @param $json
+	 * @return mixed
+	 */
+
 	function getTags($json) {
 
-		$results = json_decode($json);
-
-		foreach ($results->items as $item) {
-			$ids[] = $item->id;
-		}
+		$ids = $this->buildIdArray($json);
 
 		if ($ids) {
 			$db    = JFactory::getDbo();
