@@ -104,6 +104,26 @@ class modK2ItemFilterHelper {
 		}
 	}
 
+	/**
+	 * Function to build an associative array of IDs from supplied JSON data
+	 *
+	 * @param $json
+	 * @return array|bool
+	 */
+	function buildIdArray($json) {
+		$obj = json_decode($json);
+
+		foreach ($obj->items as $item) {
+			$ids[] = $item->id;
+		}
+
+		if ($ids) {
+			return $ids;
+		}
+
+		return FALSE;
+	}
+
 	function getTags($json) {
 
 		$results = json_decode($json);
