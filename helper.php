@@ -104,49 +104,119 @@ class modK2ItemFilterHelper {
 		}
 	}
 
-	function getTags($json) {
+	/**
+	 * Function to build an associative array of IDs from supplied JSON data
+	 *
+	 * @param $json
+	 * @return array|bool
+	 */
+	function buildIdArray($json) {
+		$obj = json_decode($json);
 
-		$results = json_decode($json);
-
-		foreach ($results->items as $item) {
+		foreach ($obj->items as $item) {
 			$ids[] = $item->id;
 		}
 
 		if ($ids) {
+			return $ids;
+		}
+
+		return FALSE;
+	}
+
+	/**
+	 * Function to get tags associated with item IDs
+	 *
+	 * @param $json
+	 * @return mixed
+	 */
+
+	function getTagData($json) {
+
+		$ids = $this->buildIdArray($json);
+
+		if ($ids) {
 			$db    = JFactory::getDbo();
-			$query = "SELECT tag.name, tag.id FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
+			$query = "SELECT tag.name, tag.id, xref.itemID AS itemId FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
 			$db->setQuery($query);
 			$rows = $db->loadObjectList();
 
-			$cloud = array();
-			if (count($rows)) {
-				foreach ($rows as $tag) {
-					if (@array_key_exists($tag->name, $cloud)) {
-						$cloud[$tag->name]++;
-					} else {
-						$cloud[$tag->name] = 1;
-					}
+			if ($rows) {
+				return $rows;
+			}
+
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Function to generate tag cloud from supplied rows
+	 *
+	 * @param $rows
+	 * @return mixed
+	 */
+
+	function buildTagCloud($json) {
+		$obj  = json_decode($json);
+		$rows = $this->getTagData($json);
+
+		// Initialize empty array
+		$cloud = array();
+
+		if (count($rows)) {
+			foreach ($rows as $tag) {
+				if (@array_key_exists($tag->name, $cloud)) {
+					$cloud[$tag->name]++;
+				} else {
+					$cloud[$tag->name] = 1;
 				}
+			}
 
-				$counter = '0';
-				$total   = NULL;
+			$counter = '0';
+			$total   = NULL;
 
-				foreach ($cloud as $key => $value) {
-					$tmp            = new stdClass;
-					$tmp->tag       = $key;
-					$tmp->count     = $value;
-					$total          = $total + $value;
-					$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
-					$tags[$counter] = $tmp;
-					$counter++;
-				}
+			foreach ($cloud as $key => $value) {
+				$tmp            = new stdClass;
+				$tmp->tag       = $key;
+				$tmp->count     = $value;
+				$total          = $total + $value;
+				$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
+				$tags[$counter] = $tmp;
+				$counter++;
+			}
 
-				$tags['category']['name']  = $results->category->name;
-				$tags['category']['total'] = $total;
+			$tags['category']['name']  = $obj->category->name;
+			$tags['category']['total'] = $total;
 
+			if ($tags) {
 				return $tags;
 			}
+
+			return FALSE;
 		}
+	}
+
+	/**
+	 * Function to associate tags with itemIDs
+	 *
+	 * @param $json
+	 * @return bool
+	 */
+	function buildTagArray($json) {
+
+		$rows = $this->getTagData($json);
+
+		if ($rows) {
+			foreach ($rows as $tag) {
+				$cloud[$tag->itemId][] = $tag->name;
+			}
+		}
+
+		if ($cloud) {
+			return $cloud;
+		}
+
+		return FALSE;
 	}
 
 	/**
@@ -156,41 +226,44 @@ class modK2ItemFilterHelper {
 	 * @return array|bool
 	 */
 	function prepareContent($json) {
-		$results = json_decode($json);
 
-		// Build array of IDs to reduce the number of database queries
-		foreach ($results->items as $item) {
-			$ids[] = $item->id;
-		}
+		$ids = $this->buildIdArray($json);
 
-		// Retrieve select data from items currently being viewed
-		$db = JFactory::getDbo();
+		if ($ids) {
 
-		$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins, tag.name AS tag, tag.id as tagId
-		FROM #__k2_items as i
-		LEFT JOIN #__k2_tags_xref AS xref
-		ON i.id = xref.itemID
-		LEFT JOIN #__k2_tags as tag
-		ON xref.tagID = tag.id
+			$tags = $this->buildTagArray($json);
+
+			// Retrieve select data from items currently being viewed
+			$db    = JFactory::getDbo();
+			$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins
+		FROM #__k2_items AS i
 		WHERE i.id IN (" . implode(',', $ids) . ")
 		AND i.published = 1";
+			$db->setQuery($query);
+			$rows = $db->loadObjectList();
 
-		$db->setQuery($query);
-		$rows = $db->loadObjectList();
+			// Process each item through content plugins
+			foreach ($rows as $item) {
+				JPluginHelper::importPlugin('k2');
+				$dispatcher =& JDispatcher::getInstance();
+				$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
 
-		// Process each item through content plugins
-		foreach ($rows as $item) {
-			JPluginHelper::importPlugin('k2');
-			$dispatcher =& JDispatcher::getInstance();
-			$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
-
-			if ($item) {
-				$items[] = $item;
+				if ($item) {
+					$items[] = $item;
+				}
 			}
-		}
 
-		if ($items) {
-			return $items;
+			foreach ($items as $item) {
+				if (@array_key_exists($item->id, $tags)) {
+					$item->tags = $tags[$item->id];
+				}
+			}
+
+			if ($items) {
+				return $items;
+			}
+
+			return FALSE;
 		}
 
 		return FALSE;
