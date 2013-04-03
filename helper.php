@@ -229,33 +229,41 @@ class modK2ItemFilterHelper {
 
 		$ids = $this->buildIdArray($json);
 
-		// Retrieve select data from items currently being viewed
-		$db    = JFactory::getDbo();
-		$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins, tag.name AS tag, tag.id as tagId
-		FROM #__k2_tags as tag
-		LEFT JOIN #__k2_tags_xref AS xref
-		ON xref.tagID = tag.id
-		LEFT JOIN #__k2_items AS i
-		ON i.id = xref.itemID
-		WHERE xref.itemID IN (" . implode(',', $ids) . ")
-		AND tag.published = 1
+		if ($ids) {
+
+			$tags = $this->buildTagArray($json);
+
+			// Retrieve select data from items currently being viewed
+			$db    = JFactory::getDbo();
+			$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins
+		FROM #__k2_items AS i
+		WHERE i.id IN (" . implode(',', $ids) . ")
 		AND i.published = 1";
-		$db->setQuery($query);
-		$rows = $db->loadObjectList();
+			$db->setQuery($query);
+			$rows = $db->loadObjectList();
 
-		// Process each item through content plugins
-		foreach ($rows as $item) {
-			JPluginHelper::importPlugin('k2');
-			$dispatcher =& JDispatcher::getInstance();
-			$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
+			// Process each item through content plugins
+			foreach ($rows as $item) {
+				JPluginHelper::importPlugin('k2');
+				$dispatcher =& JDispatcher::getInstance();
+				$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
 
-			if ($item) {
-				$items[] = $item;
+				if ($item) {
+					$items[] = $item;
+				}
 			}
-		}
 
-		if ($items) {
-			return $items;
+			foreach ($items as $item) {
+				if (@array_key_exists($item->id, $tags)) {
+					$item->tags = $tags[$item->id];
+				}
+			}
+
+			if ($items) {
+				return $items;
+			}
+
+			return FALSE;
 		}
 
 		return FALSE;
