@@ -137,7 +137,7 @@ class modK2ItemFilterHelper {
 
 		if ($ids) {
 			$db    = JFactory::getDbo();
-			$query = "SELECT tag.name, tag.id FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
+			$query = "SELECT tag.name, tag.id, xref.itemID AS itemId FROM #__k2_tags as tag LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id WHERE xref.itemID IN (" . implode(',', $ids) . ") AND tag.published = 1";
 			$db->setQuery($query);
 			$rows = $db->loadObjectList();
 
@@ -194,6 +194,29 @@ class modK2ItemFilterHelper {
 
 			return FALSE;
 		}
+	}
+
+	/**
+	 * Function to associate tags with itemIDs
+	 *
+	 * @param $json
+	 * @return bool
+	 */
+	function buildTagArray($json) {
+
+		$rows = $this->getTagData($json);
+
+		if ($rows) {
+			foreach ($rows as $tag) {
+				$cloud[$tag->itemId][] = $tag->name;
+			}
+		}
+
+		if ($cloud) {
+			return $cloud;
+		}
+
+		return FALSE;
 	}
 
 	/**
