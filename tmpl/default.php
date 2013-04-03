@@ -10,24 +10,45 @@
  * Copyright  Copyright (C) 2013 betweenbrain llc. All Rights Reserved.
  * License    GNU GPL v3 or later
  */
-/*
-$data = json_decode($videos);
-echo '<pre>' . print_r($data, true) . '</pre>';
-*/
+
+//$data = json_decode($videos);
+//echo '<pre>' . print_r($data, true) . '</pre>';
 
 $js = <<<EOD
 <script type="text/javascript">
 	(function ($) {
 		$().ready(function () {
 			var videos = {$videos};
-			$.each(videos, function(index){
-				var video = [
-				    '<div id="something">',
-				        '<span>' + this.title + '</span>',
-				    '</div>'
+			if(videos){
+				var header = [
+				    '<div class="itemList">',
+						'<div id="itemListLeading">'
 				];
-				$(video.join('')).appendTo(".videos");
-			});
+				$(header.join('')).appendTo(".itemListCategory");
+				$.each(videos, function(index){
+					var video = [
+					    '<div class="itemContainer" style="width:33.3%;">',
+					        '<div class="catItemView groupLeading">',
+					        '<a href="#">',
+					            '<img src="' + this.videoImage + '" />',
+					            '<p class="title">' + this.title + '</p>',
+					        '</a>',
+					        '<div class="details">',
+			                    '<b>' + this.hits + ' times</b>',
+			                    '<h1>' + this.title + '</h1>',
+			                    '<p>' + this.videoDuration + '|' + this.created + '</p>',
+			                    '<div class="catItemIntroText">',
+			                        '<p>' + this.introtext + '</p>',
+			                    '</div>',
+			                    '<p>',
+			                        '<a class="k2ReadMore" href="#">Read more... </a>',
+			                    '</p>',
+			                '</div>',
+					    '</div>'
+					];
+					$(video.join('')).appendTo("#itemListLeading");
+				});
+			}
 		});
 	})(jQuery)
 </script>
@@ -50,4 +71,3 @@ $doc->addCustomTag($js);
 		</li>
 	<?php endforeach ?>
 </ul>
-<div class="videos"></div>
