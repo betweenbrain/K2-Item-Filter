@@ -226,12 +226,8 @@ class modK2ItemFilterHelper {
 	 * @return array|bool
 	 */
 	function prepareContent($json) {
-		$results = json_decode($json);
 
-		// Build array of IDs to reduce the number of database queries
-		foreach ($results->items as $item) {
-			$ids[] = $item->id;
-		}
+		$ids = $this->buildIdArray($json);
 
 		// Retrieve select data from items currently being viewed
 		$db    = JFactory::getDbo();
