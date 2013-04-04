@@ -110,8 +110,9 @@ class modK2ItemFilterHelper {
 	 * @param $json
 	 * @return array|bool
 	 */
-	function buildIdArray($json) {
-		$obj = json_decode($json);
+	function buildIdArray() {
+		$json = $this->getK2Json();
+		$obj  = json_decode($json);
 
 		foreach ($obj->items as $item) {
 			$ids[] = $item->id;
@@ -131,9 +132,9 @@ class modK2ItemFilterHelper {
 	 * @return mixed
 	 */
 
-	function getTagData($json) {
-
-		$ids = $this->buildIdArray($json);
+	function getTagData() {
+		$json = $this->getK2Json();
+		$ids  = $this->buildIdArray($json);
 
 		if ($ids) {
 			$db    = JFactory::getDbo();
@@ -141,12 +142,10 @@ class modK2ItemFilterHelper {
 			$db->setQuery($query);
 			$rows = $db->loadObjectList();
 
-			if ($rows) {
-				return $rows;
-			}
-
-			return FALSE;
+			return $rows;
 		}
+
+		return FALSE;
 	}
 
 	/**
@@ -156,14 +155,16 @@ class modK2ItemFilterHelper {
 	 * @return mixed
 	 */
 
-	function buildTagCloud($json) {
-		$obj  = json_decode($json);
-		$rows = $this->getTagData($json);
+	function buildTagCloud() {
+
+		$obj  = json_decode($this->getK2Json());
+		$rows = $this->getTagData();
 
 		// Initialize empty array
 		$cloud = array();
 
-		if (count($rows)) {
+		if ($rows) {
+
 			foreach ($rows as $tag) {
 				if (@array_key_exists($tag->name, $cloud)) {
 					$cloud[$tag->name]++;
@@ -188,12 +189,10 @@ class modK2ItemFilterHelper {
 			$tags['category']['name']  = $obj->category->name;
 			$tags['category']['total'] = $total;
 
-			if ($tags) {
-				return $tags;
-			}
-
-			return FALSE;
+			return $tags;
 		}
+
+		return FALSE;
 	}
 
 	/**
@@ -202,17 +201,15 @@ class modK2ItemFilterHelper {
 	 * @param $json
 	 * @return bool
 	 */
-	function buildTagArray($json) {
+	function buildTagArray() {
 
-		$rows = $this->getTagData($json);
+		$rows = $this->getTagData();
 
 		if ($rows) {
 			foreach ($rows as $tag) {
 				$cloud[$tag->itemId][] = $tag->name;
 			}
-		}
 
-		if ($cloud) {
 			return $cloud;
 		}
 
@@ -225,47 +222,42 @@ class modK2ItemFilterHelper {
 	 * @param $json
 	 * @return array|bool
 	 */
-	function prepareContent($json) {
+	function prepareContent() {
 
-		$ids = $this->buildIdArray($json);
+		if ($ids = $this->buildIdArray()) {
 
-		if ($ids) {
-
-			$tags = $this->buildTagArray($json);
+			$tags = $this->buildTagArray();
 
 			// Retrieve select data from items currently being viewed
 			$db    = JFactory::getDbo();
 			$query = "SELECT i.id, i.title, i.alias, i.catid, i.published, i.introtext, i.fulltext, i.created, i.ordering, i.featured, i.hits, i.plugins
-		FROM #__k2_items AS i
-		WHERE i.id IN (" . implode(',', $ids) . ")
-		AND i.published = 1";
+				FROM #__k2_items AS i
+				WHERE i.id IN (" . implode(',', $ids) . ")
+				AND i.published = 1";
 			$db->setQuery($query);
 			$rows = $db->loadObjectList();
 
-			// Process each item through content plugins
-			foreach ($rows as $item) {
-				JPluginHelper::importPlugin('k2');
-				$dispatcher =& JDispatcher::getInstance();
-				$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
+			if ($rows) {
 
-				if ($item) {
+				foreach ($rows as $item) {
+
+					// Process each item through content plugins
+					JPluginHelper::importPlugin('k2');
+					$dispatcher =& JDispatcher::getInstance();
+					$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
+
+					// Add tags array to item object
+					if (@array_key_exists($item->id, $tags)) {
+						$item->tags = $tags[$item->id];
+					}
+
 					$items[] = $item;
 				}
-			}
 
-			foreach ($items as $item) {
-				if (@array_key_exists($item->id, $tags)) {
-					$item->tags = $tags[$item->id];
-				}
-			}
-
-			if ($items) {
 				return $items;
 			}
 
 			return FALSE;
 		}
-
-		return FALSE;
 	}
 }

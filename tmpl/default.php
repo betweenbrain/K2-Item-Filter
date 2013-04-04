@@ -11,8 +11,8 @@
  * License    GNU GPL v3 or later
  */
 
-//$data = json_decode($videos);
-//echo '<pre>' . print_r($data, true) . '</pre>';
+// $data = json_decode($videos);
+// echo '<pre>' . print_r($data, true) . '</pre>';
 
 $js = <<<EOD
 <script type="text/javascript">
@@ -24,7 +24,7 @@ $js = <<<EOD
 				    '<div class="itemList">',
 						'<div id="itemListLeading">'
 				];
-				$(header.join('')).appendTo(".itemListCategory");
+				$(header.join('')).appendTo(".itemListView");
 				$.each(videos, function(index){
 					var video = [
 					    '<div class="itemContainer" style="width:33.3%;">',
