@@ -11,44 +11,64 @@
  * License    GNU GPL v3 or later
  */
 
-// $data = json_decode($videos);
-// echo '<pre>' . print_r($data, true) . '</pre>';
-
 $js = <<<EOD
 <script type="text/javascript">
 	(function ($) {
+
 		$().ready(function () {
-			var videos = {$videos};
-			if(videos){
-				var header = [
-				    '<div class="itemList">',
-						'<div id="itemListLeading">'
-				];
-				$(header.join('')).appendTo(".itemListView");
-				$.each(videos, function(index){
-					var video = [
-					    '<div class="itemContainer" style="width:33.3%;">',
-					        '<div class="catItemView groupLeading">',
-					        '<a href="#">',
-					            '<img src="' + this.videoImage + '" />',
-					            '<p class="title">' + this.title + '</p>',
-					        '</a>',
-					        '<div class="details">',
-			                    '<b>' + this.hits + ' times</b>',
-			                    '<h1>' + this.title + '</h1>',
-			                    '<p>' + this.videoDuration + '|' + this.created + '</p>',
-			                    '<div class="catItemIntroText">',
-			                        '<p>' + this.introtext + '</p>',
-			                    '</div>',
-			                    '<p>',
-			                        '<a class="k2ReadMore" href="#">Read more... </a>',
-			                    '</p>',
-			                '</div>',
-					    '</div>'
-					];
-					$(video.join('')).appendTo("#itemListLeading");
+
+			$(window).bind('load', function () {
+		        var tagAlias = window.location.href.split('#')[1];
+		        showVideos(tagAlias);
+		    });
+
+  			$('a.cloud').click(function () {
+			    var tagAlias = this.href.split("#")[1];
+			    $(".itemList").fadeOut(300, function(){ $(".itemList").remove();
+			        showVideos(tagAlias);
 				});
-			}
+			});
+
+		    function showVideos(tagAlias){
+		        var videos = {$videos};
+
+		         if(videos){
+	                var header = [
+	                    '<div class="itemList">',
+	                        '<div id="itemListLeading">'
+	                ];
+
+	                $(header.join('')).appendTo(".itemListView");
+
+	                $.each(videos, function(index){
+                        var tagArray = this.tags ? this.tags : '';
+
+                        if ($.inArray(tagAlias, tagArray) !== -1) {
+                            var video = [
+                                '<div class="itemContainer" style="width:33.3%;">',
+                                    '<div class="catItemView groupLeading">',
+                                    '<a href="#">',
+                                        '<img src="' + this.videoImage + '" />',
+                                        '<p class="title">' + this.title + '</p>',
+                                    '</a>',
+                                    '<div class="details">',
+                                        '<b>' + this.hits + ' times</b>',
+                                        '<h1>' + this.title + '</h1>',
+                                        '<p>' + this.videoDuration + '|' + this.created + '</p>',
+                                        '<div class="catItemIntroText">',
+                                            '<p>' + this.introtext + '</p>',
+                                        '</div>',
+                                        '<p>',
+                                            '<a class="k2ReadMore" href="#">Read more... </a>',
+                                        '</p>',
+                                    '</div>',
+                                '</div>'
+                            ];
+                            $(video.join('')).appendTo("#itemListLeading").hide().fadeIn(300);
+	                    }
+	                });
+	            }
+		    }
 		});
 	})(jQuery)
 </script>
@@ -67,7 +87,7 @@ $doc->addCustomTag($js);
 	unset($tags['category']);
 	foreach ($tags as $tag) : ?>
 		<li>
-			<?php echo '<a href="' . $tag->link . '">' . $tag->tag . '</a><span class="count">' . $tag->count . '</span>';?>
+			<?php echo '<a class="cloud" href="#' . $tag->alias . '">' . $tag->tag . '</a><span class="count">' . $tag->count . '</span>';?>
 		</li>
 	<?php endforeach ?>
 </ul>
