@@ -157,6 +157,8 @@ class modK2ItemFilterHelper {
 
 	function buildTagCloud() {
 
+		jimport('joomla.filter.output');
+
 		$obj  = json_decode($this->getK2Json());
 		$rows = $this->getTagData();
 
@@ -179,6 +181,7 @@ class modK2ItemFilterHelper {
 			foreach ($cloud as $key => $value) {
 				$tmp            = new stdClass;
 				$tmp->tag       = $key;
+				$tmp->hash      = JFilterOutput::stringURLSafe($key);
 				$tmp->count     = $value;
 				$total          = $total + $value;
 				$tmp->link      = urldecode(JRoute::_(K2HelperRoute::getTagRoute($key)));
