@@ -251,6 +251,9 @@ class modK2ItemFilterHelper {
 					$dispatcher =& JDispatcher::getInstance();
 					$dispatcher->trigger('onK2PrepareContent', array(&$item, &$params, $limitstart));
 
+					// Format date
+					$item->created = JHTML::_('date', $item->created, JText::_('K2_DATE_FORMAT_LC2'));
+
 					// Add tags array to item object
 					if (@array_key_exists($item->id, $tags)) {
 						$item->tags = $tags[$item->id];
