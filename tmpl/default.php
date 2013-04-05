@@ -19,7 +19,11 @@ $js = <<<EOD
 
 			$(window).bind('load', function () {
 		        var tagAlias = window.location.href.split('#')[1];
-		        showVideos(tagAlias);
+		        if(tagAlias) {
+		            $(".itemList").fadeOut(300, function(){ $(".itemList").remove();
+		                showVideos(tagAlias);
+		            });
+		        }
 		    });
 
   			$('a.cloud').click(function () {
