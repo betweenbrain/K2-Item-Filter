@@ -26,6 +26,24 @@
 		       default="All in"
 		       label="MOD_K2_ITEM_FILTER_COUNT_TEXT_LABEL"
 		       description="MOD_K2_ITEM_FILTER_COUNT_TEXT_DESC"/>
+		<param name="auth"
+		       type="list"
+		       default=""
+		       label="Authentication"
+		       description="">
+			<option value="">Disabled</option>
+			<option value="1">Enabled</option>
+		</param>
+		<param
+				name="username"
+				type="text"
+				label="Username"
+				description=""/>
+		<param
+				name="password"
+				type="text"
+				label="Password"
+				description=""/>
 		<param name="moduleclass_sfx"
 		       type="text"
 		       default=""

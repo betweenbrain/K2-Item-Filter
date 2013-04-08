@@ -35,6 +35,10 @@ class modK2ItemFilterHelper {
 
 	function getK2Json($scope = NULL, $id = NULL) {
 
+		$username = $this->params->get('username');
+		$password = $this->params->get('password');
+		$auth     = $this->params->get('auth');
+
 		switch ($scope) :
 
 			case "category":
@@ -66,7 +70,16 @@ class modK2ItemFilterHelper {
 				}
 		endswitch;
 
-		$json = file_get_contents($uri);
+		if ($auth) {
+			$context = stream_context_create(array(
+				'http' => array(
+					'header' => "Authorization: Basic " . base64_encode("$username:$password")
+				)
+			));
+			$json    = file_get_contents($uri, FALSE, $context);
+		} else {
+			$json = file_get_contents($uri);
+		}
 
 		if (json_last_error() == JSON_ERROR_NONE) {
 			return $json;

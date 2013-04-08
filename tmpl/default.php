@@ -11,6 +11,9 @@
  * License    GNU GPL v3 or later
  */
 
+// $videos = json_decode($videos);
+// echo '<pre>' . print_r($videos, TRUE) . '</pre>';
+
 $js = <<<EOD
 <script type="text/javascript">
 	(function ($) {
