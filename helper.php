@@ -269,8 +269,7 @@ class modK2ItemFilterHelper {
 					// Format date
 					$item->created = JHTML::_('date', $item->created, JText::_('K2_DATE_FORMAT_LC2'));
 
-					//Read more link
-					$item->link = urldecode(JRoute::_(K2HelperRoute::getItemRoute($item->id . ':' . urlencode($item->alias))));
+					$item->link = urldecode(JRoute::_(K2HelperRoute::getItemRoute($item->id . ':' . urlencode($item->alias), $item->catid . ':' . urlencode($item->categoryalias))));
 
 					// Add tags array to item object
 					if (@array_key_exists($item->id, $tags)) {
