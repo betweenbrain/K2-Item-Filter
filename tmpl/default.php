@@ -11,6 +11,9 @@
  * License    GNU GPL v3 or later
  */
 
+//$videos = json_decode($videos);
+//echo '<pre>' . print_r($videos, TRUE) . '</pre>';
+
 $js = <<<EOD
 <script type="text/javascript">
 	(function ($) {
@@ -68,19 +71,19 @@ $js = <<<EOD
                             var video = [
                                 '<div class="itemContainer" style="width:33.3%;">',
                                     '<div class="catItemView groupLeading">',
-                                    '<a href="#">',
+                                    '<a href="' + this.link + '">',
                                         '<img src="' + this.videoImage + '" />',
                                         '<p class="title">' + this.title + '</p>',
                                     '</a>',
                                     '<div class="details">',
                                         '<b>' + this.hits + ' times</b>',
                                         '<h1>' + this.title + '</h1>',
-                                        '<p>' + this.videoDuration + '|' + this.created + '</p>',
+                                        '<p>' + this.videoDuration + ' | ' + this.created + '</p>',
                                         '<div class="catItemIntroText">',
                                             '<p>' + this.introtext + '</p>',
                                         '</div>',
                                         '<p>',
-                                            '<a class="k2ReadMore" href="#">Read more... </a>',
+                                            '<a class="k2ReadMore" href="' + this.link + '">Read more... </a>',
                                         '</p>',
                                     '</div>',
                                 '</div>'

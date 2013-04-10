@@ -11,6 +11,8 @@
  * License    GNU GPL v3 or later
  */
 
+require_once (JPATH_SITE . DS . 'components' . DS . 'com_k2' . DS . 'helpers' . DS . 'route.php');
+
 class modK2ItemFilterHelper {
 
 	/**
@@ -266,6 +268,9 @@ class modK2ItemFilterHelper {
 
 					// Format date
 					$item->created = JHTML::_('date', $item->created, JText::_('K2_DATE_FORMAT_LC2'));
+
+					//Read more link
+					$item->link = urldecode(JRoute::_(K2HelperRoute::getItemRoute($item->id . ':' . urlencode($item->alias))));
 
 					// Add tags array to item object
 					if (@array_key_exists($item->id, $tags)) {
