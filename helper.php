@@ -129,8 +129,12 @@ class modK2ItemFilterHelper {
 		$json = $this->getK2Json();
 		$obj  = json_decode($json);
 
-		foreach ($obj->items as $item) {
-			$ids[] = $item->id;
+		if ($obj->items) {
+			foreach ($obj->items as $item) {
+				$ids[] = $item->id;
+			}
+		} else {
+			$ids[] = $obj->item->id;
 		}
 
 		if ($ids) {

@@ -29,9 +29,11 @@ $tags = $itemFilter->buildTagCloud();
 $component = JRequest::getCmd('option');
 // Text to display before the tag count
 $countText = $params->get('countText');
-// Check if there are tags and K2 is the current component
+// Get current view
+$view = JRequest::getCmd('view', 0);
 
-if ($component == "com_k2" && $tags) {
+// Check if there are tags and K2 is the current component
+if ($component == "com_k2" &&  $view == "itemlist" && $tags) {
 
 	// Render module output
 	require JModuleHelper::getLayoutPath('mod_k2_item_filter');
