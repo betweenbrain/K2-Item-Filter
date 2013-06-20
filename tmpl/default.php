@@ -43,7 +43,7 @@ $js = <<<EOD
 
   			$('a.cloud').click(function () {
 			    var tagAlias = this.href.split("#")[1];
-			    $(".itemList").fadeOut(300, function(){ $(".itemList").remove();
+			    $("#k2Container .itemList").fadeOut(300, function(){ $("#k2Container .itemList").remove();
 			        showVideos(tagAlias);
 				});
 				return false;
