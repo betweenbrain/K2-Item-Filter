@@ -46,6 +46,7 @@ $js = <<<EOD
 			    $(".itemList").fadeOut(300, function(){ $(".itemList").remove();
 			        showVideos(tagAlias);
 				});
+				return false;
 			});
 
 		    function showVideos(tagAlias){
